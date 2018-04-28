@@ -1,3 +1,4 @@
+[ ![Download](https://api.bintray.com/packages/ihaq/maven/ample/images/download.svg) ](https://bintray.com/ihaq/maven/ample/_latestVersion)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg) ](LICENSE)
 
 # Ample
@@ -38,5 +39,37 @@ public class TestPlugin extends JavaPlugin {
             .register(this); // all objects to register must be passed in at this time
     }
 
+}
+```
+
+
+## Download
+[ ![Download](https://api.bintray.com/packages/ihaq/maven/ample/images/download.svg) ](https://bintray.com/ihaq/maven/ample/_latestVersion)
+
+Replace VERSION with the verion above.
+
+#### Maven
+```xml
+<repository>
+    <id>jcenter</id>
+    <name>jcenter-bintray</name>
+    <url>http://jcenter.bintray.com</url>
+</repository>
+
+<dependency>
+    <groupId>me.ihaq.ample</groupId>
+    <artifactId>ample</artifactId>
+    <version>VERSION</version>
+</dependency>
+```
+
+#### Gradle
+```gradle
+dependencies {
+    compile 'me.ihaq.ample:ample:VERSION'
+}
+
+repositories {
+    jcenter()
 }
 ```
