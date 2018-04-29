@@ -36,7 +36,7 @@ public class TestPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         new Ample(this) // passing in java plugin, so it can get plugin name
-            .register(this); // all objects to register must be passed in at this time
+            .register(this); // the objects that contain the command annotated methods
     }
 
 }

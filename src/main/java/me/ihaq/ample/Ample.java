@@ -18,6 +18,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class Ample {
@@ -90,13 +91,12 @@ public class Ample {
 
             commandMap.register(plugin.getName(), bukkitCommand);
             commandDataList.add(commandData);
+
+            // registering the command in bukkit's HelpMap
+            HelpTopic helpTopic = new GenericCommandHelpTopic(bukkitCommand);
+            plugin.getServer().getHelpMap().addTopic(new IndexHelpTopic(plugin.getName(), null, null, Collections.singletonList(helpTopic)));
         }));
 
-        // reasserting all commands in the helpmap so we can do "/help pluginname" and it will show all of our commands
-        List<HelpTopic> help = new ArrayList<>();
-        commandDataList.forEach(commandData -> help.add(new GenericCommandHelpTopic(commandMap.getCommand(commandData.getName()))));
-        IndexHelpTopic topic = new IndexHelpTopic(plugin.getName(), null, null, help);
-        plugin.getServer().getHelpMap().addTopic(topic);
 
     }
 
