@@ -89,6 +89,11 @@ public class Ample {
             if (commandData.getAlias().length != 0)
                 bukkitCommand.setAliases(Arrays.asList(commandData.getAlias()));
 
+            if (method.isAnnotationPresent(Permission.class)) {
+                bukkitCommand.setPermission(method.getAnnotation(Permission.class).value());
+                bukkitCommand.setPermissionMessage("You do not have permission to use this command.");
+            }
+
             commandMap.register(plugin.getName(), bukkitCommand);
             commandDataList.add(commandData);
 
@@ -96,7 +101,6 @@ public class Ample {
             HelpTopic helpTopic = new GenericCommandHelpTopic(bukkitCommand);
             plugin.getServer().getHelpMap().addTopic(new IndexHelpTopic(plugin.getName(), null, null, Collections.singletonList(helpTopic)));
         }));
-
 
     }
 
@@ -109,11 +113,6 @@ public class Ample {
 
         if (commandData.isPlayerOnly() && !(commandSender instanceof Player)) {
             commandSender.sendMessage("Only players can perform this command.");
-            return true;
-        }
-
-        if (commandData.getPermission() != null && !commandSender.hasPermission(commandData.getPermission())) {
-            commandSender.sendMessage("You do not have permission to use this command.");
             return true;
         }
 
