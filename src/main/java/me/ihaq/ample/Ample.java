@@ -1,9 +1,9 @@
 package me.ihaq.ample;
 
-import me.ihaq.ample.data.Command;
+import me.ihaq.ample.data.annotation.Command;
 import me.ihaq.ample.data.CommandData;
-import me.ihaq.ample.data.Permission;
-import me.ihaq.ample.data.PlayerOnly;
+import me.ihaq.ample.data.annotation.Permission;
+import me.ihaq.ample.data.annotation.PlayerOnly;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
@@ -38,7 +38,6 @@ public class Ample {
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
-
     }
 
     public void register(Object... objects) {
@@ -69,8 +68,7 @@ public class Ample {
             // making CommandData object out of the annotations
             CommandData commandData = new CommandData(commandAnnotation.value(), commandAnnotation.description(), commandAnnotation.usage(), commandAnnotation.alias(),
                     method.isAnnotationPresent(Permission.class) ? method.getAnnotation(Permission.class).value() : null,
-                    method.isAnnotationPresent(PlayerOnly.class),
-                    method, object);
+                    method.isAnnotationPresent(PlayerOnly.class), method, object);
 
             // making BukkitCommand to register in CommandMap
             BukkitCommand bukkitCommand = new BukkitCommand(commandData.getName()) {
@@ -79,6 +77,7 @@ public class Ample {
                     return onCommand(commandSender, s, strings);
                 }
             };
+            
 
             if (!commandData.getDescription().isEmpty())
                 bukkitCommand.setDescription(commandData.getDescription());
