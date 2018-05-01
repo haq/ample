@@ -1,7 +1,7 @@
 package me.ihaq.ample;
 
-import me.ihaq.ample.data.annotation.Command;
 import me.ihaq.ample.data.CommandData;
+import me.ihaq.ample.data.annotation.Command;
 import me.ihaq.ample.data.annotation.Permission;
 import me.ihaq.ample.data.annotation.PlayerOnly;
 import org.bukkit.Bukkit;
@@ -16,10 +16,12 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Ample {
 
@@ -43,23 +45,7 @@ public class Ample {
     public void register(Object... objects) {
         Arrays.stream(objects).forEach(object -> Arrays.stream(object.getClass().getDeclaredMethods()).forEach(method -> {
 
-            method.setAccessible(true);
-
-            // checking if the method has the proper annotation
-            if (!method.isAnnotationPresent(Command.class))
-                return;
-
-            // checking if the command has only 3 parameter
-            if (method.getParameterCount() != 3)
-                return;
-
-            if (!CommandData.class.isAssignableFrom(method.getParameterTypes()[0]))
-                return;
-
-            if (!CommandSender.class.isAssignableFrom(method.getParameterTypes()[1]))
-                return;
-
-            if (!String[].class.isAssignableFrom(method.getParameterTypes()[2]))
+            if (!isMethodValid(method))
                 return;
 
             // getting Command annotation
@@ -71,63 +57,124 @@ public class Ample {
                     method.isAnnotationPresent(PlayerOnly.class), method, object);
 
             // making BukkitCommand to register in CommandMap
-            BukkitCommand bukkitCommand = new BukkitCommand(commandData.getName()) {
-                @Override
-                public boolean execute(CommandSender commandSender, String s, String[] strings) {
-                    return onCommand(commandSender, s, strings);
-                }
-            };
-            
+            BukkitCommand bukkitCommand = makeBukkitCommand(commandData, method);
 
-            if (!commandData.getDescription().isEmpty())
-                bukkitCommand.setDescription(commandData.getDescription());
+            if (commandMap.getCommand(bukkitCommand.getName()) == null) {
+                commandMap.register(plugin.getName(), bukkitCommand);
 
-            if (!commandData.getUsage().isEmpty())
-                bukkitCommand.setUsage("/" + commandData.getUsage());
-
-            if (commandData.getAlias().length != 0)
-                bukkitCommand.setAliases(Arrays.asList(commandData.getAlias()));
-
-            if (method.isAnnotationPresent(Permission.class)) {
-                bukkitCommand.setPermission(method.getAnnotation(Permission.class).value());
-                bukkitCommand.setPermissionMessage("You do not have permission to use this command.");
+                // registering the command in bukkit's HelpMap
+                HelpTopic helpTopic = new GenericCommandHelpTopic(bukkitCommand);
+                plugin.getServer().getHelpMap().addTopic(new IndexHelpTopic(plugin.getName(), null, null, Collections.singletonList(helpTopic)));
             }
 
-            commandMap.register(plugin.getName(), bukkitCommand);
             commandDataList.add(commandData);
-
-            // registering the command in bukkit's HelpMap
-            HelpTopic helpTopic = new GenericCommandHelpTopic(bukkitCommand);
-            plugin.getServer().getHelpMap().addTopic(new IndexHelpTopic(plugin.getName(), null, null, Collections.singletonList(helpTopic)));
         }));
-
     }
 
     private boolean onCommand(CommandSender commandSender, String label, String[] args) {
 
-        CommandData commandData = getCommandData(label);
+        for (CommandData commandData : getCommandData(label)) {
 
-        if (commandData == null)
-            return false;
+            if (commandData == null)
+                return false;
 
-        if (commandData.isPlayerOnly() && !(commandSender instanceof Player)) {
-            commandSender.sendMessage("Only players can perform this command.");
-            return true;
-        }
+            if (commandData.isPlayerOnly() && !(commandSender instanceof Player)) {
+                commandSender.sendMessage("Only players can perform this command.");
+                return true;
+            }
 
-        try {
-            commandData.getMethod().invoke(commandData.getMethodParent(), commandData, commandSender, args);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+            if (commandData.getPermission() != null && !commandSender.hasPermission(commandData.getPermission())) {
+                commandSender.sendMessage("You do not have permission to use this command.");
+                return true;
+            }
+
+            // handling subcommand validation
+            if (commandData.getSubName() != null) {
+                if (args.length <= 0)
+                    return false;
+
+                if (!commandData.getSubName().equalsIgnoreCase(args[0]) && Arrays.stream(commandData.getAlias()).noneMatch(s -> s.equalsIgnoreCase(args[0])))
+                    return false;
+            }
+
+            try {
+                commandData.getMethod().invoke(commandData.getMethodParent(), commandData, commandSender, args);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
         }
 
         return false;
     }
 
-    private CommandData getCommandData(String label) {
+
+    /**
+     * @param method the method to validate
+     * @return returns whether the method is valid or not
+     */
+    private boolean isMethodValid(Method method) {
+
+        method.setAccessible(true);
+
+        // checking if the method has the proper annotation
+        if (!method.isAnnotationPresent(Command.class))
+            return false;
+
+        // checking if the command has only 3 parameter
+        if (method.getParameterCount() != 3)
+            return false;
+
+        if (!CommandData.class.isAssignableFrom(method.getParameterTypes()[0]))
+            return false;
+
+        if (!CommandSender.class.isAssignableFrom(method.getParameterTypes()[1]))
+            return false;
+
+        if (!String[].class.isAssignableFrom(method.getParameterTypes()[2]))
+            return false;
+
+        return true;
+    }
+    
+    private BukkitCommand makeBukkitCommand(CommandData commandData, Method method) {
+
+        BukkitCommand bukkitCommand = new BukkitCommand(commandData.getName()) {
+            @Override
+            public boolean execute(CommandSender commandSender, String s, String[] strings) {
+                return onCommand(commandSender, s, strings);
+            }
+        };
+
+        if (!commandData.getDescription().isEmpty())
+            bukkitCommand.setDescription(commandData.getDescription());
+
+        if (!commandData.getUsage().isEmpty())
+            bukkitCommand.setUsage("/" + commandData.getUsage());
+
+        if (commandData.getAlias().length != 0)
+            bukkitCommand.setAliases(Arrays.asList(commandData.getAlias()));
+
+        if (method.isAnnotationPresent(Permission.class)) {
+            bukkitCommand.setPermission(method.getAnnotation(Permission.class).value());
+            bukkitCommand.setPermissionMessage("You do not have permission to use this command.");
+        }
+        return bukkitCommand;
+    }
+
+    /**
+     * @param label the name of the command to search for
+     * @return returns a list of CommandData objects that matched
+     */
+    private List<CommandData> getCommandData(String label) {
         return commandDataList.stream()
-                .filter(commandData -> commandData.getName().equalsIgnoreCase(label) || Arrays.stream(commandData.getAlias()).anyMatch(s -> s.equalsIgnoreCase(label)))
-                .findFirst().orElse(null);
+                .filter(commandData -> {
+                    if (commandData.getSubName() == null) {
+                        return commandData.getName().equalsIgnoreCase(label) || Arrays.stream(commandData.getAlias()).anyMatch(s -> s.equalsIgnoreCase(label));
+                    } else {
+                        return commandData.getName().equalsIgnoreCase(label);
+                    }
+                })
+                .collect(Collectors.toList());
     }
 
 }

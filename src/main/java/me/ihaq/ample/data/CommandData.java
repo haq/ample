@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 public class CommandData {
 
     private String name;
+    private String subName;
     private String description;
     private String usage;
     private String[] alias;
@@ -22,10 +23,20 @@ public class CommandData {
         this.playerOnly = playerOnly;
         this.method = method;
         this.methodParent = methodParent;
+
+        if (this.name.contains(".")) {
+            String[] splitString = this.name.split("\\.");
+            this.name = splitString[0];
+            this.subName = splitString[1];
+        }
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getSubName() {
+        return subName;
     }
 
     public String getDescription() {
