@@ -4,26 +4,19 @@
 # Ample
 A basic annotation based command system for Bukkit/Spigot. You do need to declare the commands in plugin.yml as it will register the commands using reflection.
 
+## Todo
+* Subcommands
+
 ## Declaration
 
 ```java
 public class TestPlugin extends JavaPlugin {
 
-    // basic command
-    @Command(value = "Test", description = "Test command", usage = "Example usage.", alias = {"tst", "t"})//every command method needs this annotation
+    @Command(value = "Test", description = "Test command", usage = "Example usage.", alias = {"tst","t"}) //every command method needs this annotation
     @PlayerOnly // tag a method with this annotation if you want that command to be run by a player only
-    @Permission("example.test") // tag a method with this if the command has a permission requirement
+    @Permission("example.perm") // tag a method with this if the command has a permission requirement
     public void test(CommandData commandData, CommandSender commandSender, String[] args) {
         // handle command
-    }
-
-
-    // subcommand
-    @Command(value = "Test.subcommand", description = "Test subcommand", usage = "Example sub usage.", alias = {"sub", "s"})
-    @PlayerOnly
-    @Permission("example.test.sub")
-    public void testSub(CommandData commandData, CommandSender commandSender, String[] args) {
-        System.out.println("TEST COMMAND SUB!");
     }
 
 }
@@ -33,12 +26,11 @@ public class TestPlugin extends JavaPlugin {
 ```java
 public class TestPlugin extends JavaPlugin {
 
-    // basic command
-    @Command(value = "Test", description = "Test command", usage = "Example usage.", alias = {"tst", "t"})//every command method needs this annotation
+    @Command(value = "Test", description = "Test command", usage = "Example usage.", alias = {"tst","t"}) //every command method needs this annotation
     @PlayerOnly // tag a method with this annotation if you want that command to be run by a player only
-    @Permission("example.test") // tag a method with this if the command has a permission requirement
+    @Permission("example.perm") // tag a method with this if the command has a permission requirement
     public void test(CommandData commandData, CommandSender commandSender, String[] args) {
-        // handle command
+        System.out.println("TEST COMMAND!");
     }
 
     @Override
