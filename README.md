@@ -1,8 +1,7 @@
-[ ![Download](https://api.bintray.com/packages/ihaq/maven/ample/images/download.svg) ](https://bintray.com/ihaq/maven/ample/_latestVersion)
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg) ](LICENSE)
 
 # Ample
-A basic annotation based command system for Bukkit/Spigot. You do need to declare the commands in plugin.yml as it will register the commands using reflection.
+A basic annotation based command system for Bukkit/Spigot. You do need to declare the commands in plugin.yml as it will register the commands for you.
 
 ## Todo
 * Subcommands
@@ -42,34 +41,32 @@ public class TestPlugin extends JavaPlugin {
 }
 ```
 
-
 ## Download
-[ ![Download](https://api.bintray.com/packages/ihaq/maven/ample/images/download.svg) ](https://bintray.com/ihaq/maven/ample/_latestVersion)
-
-Replace VERSION with the verion above.
 
 #### Maven
 ```xml
 <repository>
-    <id>jcenter</id>
-    <name>jcenter-bintray</name>
-    <url>http://jcenter.bintray.com</url>
+    <id>ihaq-me</id>
+    <name>ihaq-maven</name>
+    <url>http://maven.ihaq.me</url>
 </repository>
 
 <dependency>
-    <groupId>me.ihaq.ample</groupId>
+    <groupId>me.ihaq</groupId>
     <artifactId>ample</artifactId>
-    <version>VERSION</version>
+    <version>1.0</version>
 </dependency>
 ```
 
 #### Gradle
 ```gradle
-dependencies {
-    compile 'me.ihaq.ample:ample:VERSION'
+repositories {
+    maven {
+        url "http://maven.ihaq.me"
+    }
 }
 
-repositories {
-    jcenter()
+dependencies {
+    compile 'me.ihaq:ample:1.0'
 }
 ```

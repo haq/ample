@@ -8,6 +8,13 @@
     <artifactId>ample</artifactId>
     <version>1.0</version>
     <build>
+        <extensions>
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ftp</artifactId>
+                <version>3.0.0</version>
+            </extension>
+        </extensions>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -19,6 +26,13 @@
             </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <repository>
+            <id>ihaq-maven</id>
+            <url>ftp://ftp.ihaq.me/maven.ihaq.me/</url>
+        </repository>
+    </distributionManagement>
 
     <repositories>
         <repository>
@@ -35,14 +49,5 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
-    <distributionManagement>
-        <repository>
-            <id>bintray-ihaq-maven</id>
-            <name>ihaq-maven</name>
-            <url>https://api.bintray.com/maven/ihaq/maven/ample/;publish=1</url>
-        </repository>
-    </distributionManagement>
-
-
+    
 </project>
