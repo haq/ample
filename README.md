@@ -54,7 +54,7 @@ public class TestPlugin extends JavaPlugin {
 <dependency>
     <groupId>me.ihaq</groupId>
     <artifactId>ample</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
 </dependency>
 ```
 
@@ -67,6 +67,6 @@ repositories {
 }
 
 dependencies {
-    compile 'me.ihaq:ample:1.0'
+    compile 'me.ihaq:ample:1.1'
 }
 ```
