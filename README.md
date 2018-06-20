@@ -14,7 +14,7 @@ public class TestPlugin extends JavaPlugin {
     @Command(value = "Test", description = "Test command", usage = "Example usage.", alias = {"tst","t"}) //every command method needs this annotation
     @PlayerOnly // tag a method with this annotation if you want that command to be run by a player only
     @Permission("example.perm") // tag a method with this if the command has a permission requirement
-    public void test(CommandData commandData, CommandSender commandSender, String[] args) {
+    public void test(CommandSender commandSender, String[] args) {
         // handle command
     }
 
@@ -28,7 +28,7 @@ public class TestPlugin extends JavaPlugin {
     @Command(value = "Test", description = "Test command", usage = "Example usage.", alias = {"tst","t"}) //every command method needs this annotation
     @PlayerOnly // tag a method with this annotation if you want that command to be run by a player only
     @Permission("example.perm") // tag a method with this if the command has a permission requirement
-    public void test(CommandData commandData, CommandSender commandSender, String[] args) {
+    public void test(CommandSender commandSender, String[] args) {
         System.out.println("TEST COMMAND!");
     }
 

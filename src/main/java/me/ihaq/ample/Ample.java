@@ -73,8 +73,8 @@ public class Ample {
             // making BukkitCommand to register in CommandMap
             BukkitCommand bukkitCommand = new BukkitCommand(commandData.getName()) {
                 @Override
-                public boolean execute(CommandSender commandSender, String s, String[] strings) {
-                    return onCommand(commandSender, s, strings);
+                public boolean execute(CommandSender commandSender, String label, String[] args) {
+                    return onCommand(commandSender, label, args);
                 }
             };
 
@@ -119,7 +119,7 @@ public class Ample {
         }
 
         try {
-            commandData.getMethod().invoke(commandData.getMethodParent(), commandData, commandSender, args);
+            commandData.getMethod().invoke(commandData.getMethodParent(), commandSender, args);
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
