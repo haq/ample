@@ -1,7 +1,7 @@
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg) ](LICENSE)
 
 # Ample
-A basic annotation based command system for Bukkit/Spigot. You do need to declare the commands in plugin.yml as it will register the commands for you.
+A basic annotation based command system for Spigot. You do need to declare the commands in plugin.yml as it will register the commands for you.
 
 ## Todo
 * Subcommands
@@ -48,7 +48,7 @@ public class TestPlugin extends JavaPlugin {
 <repository>
     <id>ihaq-me</id>
     <name>ihaq-maven</name>
-    <url>http://maven.ihaq.me</url>
+    <url>http://maven.ihaq.me/repo/</url>
 </repository>
 
 <dependency>
@@ -62,7 +62,7 @@ public class TestPlugin extends JavaPlugin {
 ```gradle
 repositories {
     maven {
-        url "http://maven.ihaq.me"
+        url "http://maven.ihaq.me/repo/"
     }
 }
 
