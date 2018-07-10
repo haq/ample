@@ -46,21 +46,22 @@ public class Ample {
             method.setAccessible(true);
 
             // checking if the method has the proper annotation
-            if (!method.isAnnotationPresent(Command.class))
+            if (!method.isAnnotationPresent(Command.class)){
                 return;
+            }
 
-            // checking if the command has only 3 parameter
-            if (method.getParameterCount() != 3)
+            // checking if the command has only 2 parameter
+            if (method.getParameterCount() != 2){
                 return;
+            }
 
-            if (!CommandData.class.isAssignableFrom(method.getParameterTypes()[0]))
+            if (!CommandSender.class.isAssignableFrom(method.getParameterTypes()[0])){
                 return;
+            }
 
-            if (!CommandSender.class.isAssignableFrom(method.getParameterTypes()[1]))
+            if (!String[].class.isAssignableFrom(method.getParameterTypes()[1])){
                 return;
-
-            if (!String[].class.isAssignableFrom(method.getParameterTypes()[2]))
-                return;
+            }
 
             // getting Command annotation
             Command commandAnnotation = method.getAnnotation(Command.class);
@@ -105,8 +106,9 @@ public class Ample {
 
         CommandData commandData = getCommandData(label);
 
-        if (commandData == null)
+        if (commandData == null){
             return false;
+        }
 
         if (commandData.isPlayerOnly() && !(commandSender instanceof Player)) {
             commandSender.sendMessage("Only players can perform this command.");
