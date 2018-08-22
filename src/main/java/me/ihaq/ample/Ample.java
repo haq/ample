@@ -46,20 +46,20 @@ public class Ample {
             method.setAccessible(true);
 
             // checking if the method has the proper annotation
-            if (!method.isAnnotationPresent(Command.class)){
+            if (!method.isAnnotationPresent(Command.class)) {
                 return;
             }
 
             // checking if the command has only 2 parameter
-            if (method.getParameterCount() != 2){
+            if (method.getParameterCount() != 2) {
                 return;
             }
 
-            if (!CommandSender.class.isAssignableFrom(method.getParameterTypes()[0])){
+            if (!CommandSender.class.isAssignableFrom(method.getParameterTypes()[0])) {
                 return;
             }
 
-            if (!String[].class.isAssignableFrom(method.getParameterTypes()[1])){
+            if (!String[].class.isAssignableFrom(method.getParameterTypes()[1])) {
                 return;
             }
 
@@ -67,9 +67,16 @@ public class Ample {
             Command commandAnnotation = method.getAnnotation(Command.class);
 
             // making CommandData object out of the annotations
-            CommandData commandData = new CommandData(commandAnnotation.value(), commandAnnotation.description(), commandAnnotation.usage(), commandAnnotation.alias(),
+            CommandData commandData = new CommandData(
+                    commandAnnotation.value(),
+                    commandAnnotation.description(),
+                    commandAnnotation.usage(),
+                    commandAnnotation.alias(),
                     method.isAnnotationPresent(Permission.class) ? method.getAnnotation(Permission.class).value() : null,
-                    method.isAnnotationPresent(PlayerOnly.class), method, object);
+                    method.isAnnotationPresent(PlayerOnly.class),
+                    method,
+                    object
+            );
 
             // making BukkitCommand to register in CommandMap
             BukkitCommand bukkitCommand = new BukkitCommand(commandData.getName()) {
@@ -79,14 +86,17 @@ public class Ample {
                 }
             };
 
-            if (!commandData.getDescription().isEmpty())
+            if (!commandData.getDescription().isEmpty()) {
                 bukkitCommand.setDescription(commandData.getDescription());
+            }
 
-            if (!commandData.getUsage().isEmpty())
+            if (!commandData.getUsage().isEmpty()) {
                 bukkitCommand.setUsage("/" + commandData.getUsage());
+            }
 
-            if (commandData.getAlias().length != 0)
+            if (commandData.getAlias().length != 0) {
                 bukkitCommand.setAliases(Arrays.asList(commandData.getAlias()));
+            }
 
             if (method.isAnnotationPresent(Permission.class)) {
                 bukkitCommand.setPermission(method.getAnnotation(Permission.class).value());
@@ -106,7 +116,7 @@ public class Ample {
 
         CommandData commandData = getCommandData(label);
 
-        if (commandData == null){
+        if (commandData == null) {
             return false;
         }
 
