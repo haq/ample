@@ -1,6 +1,6 @@
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg) ](LICENSE)
 
-# Ample
+# ample
 A basic annotation based command system for Spigot. You do need to declare the commands in plugin.yml as it will register the commands for you.
 
 ## Todo
@@ -42,30 +42,16 @@ public class TestPlugin extends JavaPlugin {
 ```
 
 ## Download
-
-#### Maven
 ```xml
 <repository>
-    <id>ihaq-maven</id>
-    <url>http://maven.ihaq.me/libs-maven/</url>
+   <id>maven-public</id>
+   <url>http://nexus.ihaq.me/repository/maven-public/</url>
 </repository>
-
+```
+```xml
 <dependency>
     <groupId>me.ihaq</groupId>
     <artifactId>ample</artifactId>
     <version>1.1</version>
 </dependency>
-```
-
-#### Gradle
-```gradle
-repositories {
-    maven {
-        url "http://maven.ihaq.me/libs-maven/"
-    }
-}
-
-dependencies {
-    compile 'me.ihaq:ample:1.1'
-}
 ```
