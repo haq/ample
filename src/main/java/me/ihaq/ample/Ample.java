@@ -23,9 +23,9 @@ import java.util.List;
 
 public class Ample {
 
-    private JavaPlugin plugin;
+    private final JavaPlugin plugin;
     private CommandMap commandMap;
-    private List<CommandData> commandDataList;
+    private final List<CommandData> commandDataList;
 
     public Ample(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -41,7 +41,8 @@ public class Ample {
     }
 
     public void register(Object... objects) {
-        Arrays.stream(objects).forEach(object -> Arrays.stream(object.getClass().getDeclaredMethods()).forEach(method -> {
+        Arrays.stream(objects)
+                .forEach(object -> Arrays.stream(object.getClass().getDeclaredMethods()).forEach(method -> {
 
             method.setAccessible(true);
 
