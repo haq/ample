@@ -4,14 +4,14 @@ import java.lang.reflect.Method;
 
 public class CommandData {
 
-    private String name;
-    private String description;
-    private String usage;
-    private String[] alias;
-    private String permission;
-    private boolean playerOnly;
-    private Method method;
-    private Object methodParent;
+    private final String name;
+    private final String description;
+    private final String usage;
+    private final String[] alias;
+    private final String permission;
+    private final boolean playerOnly;
+    private final Method method;
+    private final Object methodParent;
 
     public CommandData(String name, String description, String usage, String[] alias, String permission, boolean playerOnly, Method method, Object methodParent) {
         this.name = name;
