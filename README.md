@@ -1,4 +1,5 @@
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg) ](LICENSE)
+[![](https://jitpack.io/v/haq/ample.svg)](https://jitpack.io/#haq/ample)
 
 # ample
 A basic annotation based command system for Spigot. You do no need to declare the commands in plugin.yml as it will register the commands for you.
@@ -37,6 +38,6 @@ public class TestPlugin extends JavaPlugin {
 <dependency> 
     <groupId>com.github.haq</groupId> 
     <artifactId>ample</artifactId> 
-    <version>master-SNAPSHOT</version> 
+    <version>VERSION</version> 
 </dependency>
 ```

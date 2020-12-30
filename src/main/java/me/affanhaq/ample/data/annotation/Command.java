@@ -1,4 +1,4 @@
-package me.ihaq.ample.data.annotation;
+package me.affanhaq.ample.data.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
