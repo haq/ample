@@ -1,4 +1,4 @@
-package me.ihaq.ample.data;
+package me.affanhaq.ample.data;
 
 import java.lang.reflect.Method;
 
