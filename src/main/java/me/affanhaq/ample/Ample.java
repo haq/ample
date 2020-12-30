@@ -16,20 +16,19 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashMap;
 
 public class Ample {
 
+    private static final HashMap<String, CommandData> COMMANDS = new HashMap<>();
+
     private final JavaPlugin plugin;
     private CommandMap commandMap;
-    private final List<CommandData> commandDataList;
 
     public Ample(JavaPlugin plugin) {
         this.plugin = plugin;
-        commandDataList = new ArrayList<>();
 
         try {
             Field bukkitCommandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
@@ -42,113 +41,106 @@ public class Ample {
 
     public void register(Object... objects) {
         Arrays.stream(objects).forEach(object ->
-                Arrays.stream(object.getClass().getDeclaredMethods()).forEach(method -> {
+                Arrays.stream(object.getClass().getDeclaredMethods())
+                        .filter(method -> method.isAnnotationPresent(Command.class))
+                        .filter(method -> method.getParameterCount() == 2)
+                        .filter(method -> CommandSender.class.isAssignableFrom(method.getParameterTypes()[0]))
+                        .filter(method -> String[].class.isAssignableFrom(method.getParameterTypes()[1]))
+                        .forEach(method -> {
 
-                    method.setAccessible(true);
+                            method.setAccessible(true);
 
-                    // checking if the method has the proper annotation
-                    if (!method.isAnnotationPresent(Command.class)) {
-                        return;
-                    }
+                            // getting Command annotation
+                            Command commandAnnotation = method.getAnnotation(Command.class);
 
-                    // checking if the command has only 2 parameter
-                    if (method.getParameterCount() != 2) {
-                        return;
-                    }
+                            // making CommandData object out of the annotations
+                            CommandData commandData = new CommandData(
+                                    commandAnnotation.value(),
+                                    commandAnnotation.description(),
+                                    commandAnnotation.usage(),
+                                    commandAnnotation.alias(),
+                                    method.isAnnotationPresent(Permission.class) ? method.getAnnotation(Permission.class).value() : null,
+                                    method.isAnnotationPresent(PlayerOnly.class),
+                                    method,
+                                    object
+                            );
 
-                    if (!CommandSender.class.isAssignableFrom(method.getParameterTypes()[0])) {
-                        return;
-                    }
+                            // making BukkitCommand to register in CommandMap
+                            BukkitCommand bukkitCommand = new BukkitCommand(commandData.getName()) {
+                                @Override
+                                public boolean execute(CommandSender commandSender, String label, String[] args) {
+                                    return Ample.onCommand(commandSender, label, args);
+                                }
+                            };
 
-                    if (!String[].class.isAssignableFrom(method.getParameterTypes()[1])) {
-                        return;
-                    }
+                            if (!commandData.getDescription().isEmpty()) {
+                                bukkitCommand.setDescription(commandData.getDescription());
+                            }
 
-                    // getting Command annotation
-                    Command commandAnnotation = method.getAnnotation(Command.class);
+                            if (!commandData.getUsage().isEmpty()) {
+                                bukkitCommand.setUsage("/" + commandData.getUsage());
+                            }
 
-                    // making CommandData object out of the annotations
-                    CommandData commandData = new CommandData(
-                            commandAnnotation.value(),
-                            commandAnnotation.description(),
-                            commandAnnotation.usage(),
-                            commandAnnotation.alias(),
-                            method.isAnnotationPresent(Permission.class) ? method.getAnnotation(Permission.class).value() : null,
-                            method.isAnnotationPresent(PlayerOnly.class),
-                            method,
-                            object
-                    );
+                            if (commandData.getAlias().length != 0) {
+                                bukkitCommand.setAliases(Arrays.asList(commandData.getAlias()));
+                            }
 
-                    // making BukkitCommand to register in CommandMap
-                    BukkitCommand bukkitCommand = new BukkitCommand(commandData.getName()) {
-                        @Override
-                        public boolean execute(CommandSender commandSender, String label, String[] args) {
-                            return onCommand(commandSender, label, args);
-                        }
-                    };
+                            if (method.isAnnotationPresent(Permission.class)) {
+                                bukkitCommand.setPermission(method.getAnnotation(Permission.class).value());
+                                bukkitCommand.setPermissionMessage("You do not have permission to use this command.");
+                            }
 
-                    if (!commandData.getDescription().isEmpty()) {
-                        bukkitCommand.setDescription(commandData.getDescription());
-                    }
+                            // register the command in spigots command map
+                            commandMap.register(plugin.getName(), bukkitCommand);
 
-                    if (!commandData.getUsage().isEmpty()) {
-                        bukkitCommand.setUsage("/" + commandData.getUsage());
-                    }
+                            // register the command in our command map along with its aliases
+                            COMMANDS.put(commandData.getName().toLowerCase(), commandData);
+                            Arrays.stream(commandData.getAlias())
+                                    .forEach(alias -> COMMANDS.put(alias.toLowerCase(), commandData));
 
-                    if (commandData.getAlias().length != 0) {
-                        bukkitCommand.setAliases(Arrays.asList(commandData.getAlias()));
-                    }
-
-                    if (method.isAnnotationPresent(Permission.class)) {
-                        bukkitCommand.setPermission(method.getAnnotation(Permission.class).value());
-                        bukkitCommand.setPermissionMessage("You do not have permission to use this command.");
-                    }
-
-                    commandMap.register(plugin.getName(), bukkitCommand);
-                    commandDataList.add(commandData);
-
-                    // registering the command in bukkit's HelpMap
-                    HelpTopic helpTopic = new GenericCommandHelpTopic(bukkitCommand);
-                    plugin.getServer().getHelpMap().addTopic(new IndexHelpTopic(
-                            plugin.getName(),
-                            null,
-                            null,
-                            Collections.singletonList(helpTopic)
-                    ));
-                }));
+                            // registering the command in bukkit's HelpMap
+                            HelpTopic helpTopic = new GenericCommandHelpTopic(bukkitCommand);
+                            plugin.getServer().getHelpMap().addTopic(new IndexHelpTopic(
+                                    plugin.getName(),
+                                    null,
+                                    null,
+                                    Collections.singletonList(helpTopic)
+                            ));
+                        }));
     }
 
-    private boolean onCommand(CommandSender commandSender, String label, String[] args) {
+    private static boolean onCommand(CommandSender commandSender, String label, String[] args) {
 
-        CommandData commandData = getCommandData(label);
+        CommandData commandData = COMMANDS.get(label.toLowerCase());
 
+        // no command was found for the given input
         if (commandData == null) {
             return false;
         }
 
+        // command is player only but non-player is calling the command
         if (commandData.isPlayerOnly() && !(commandSender instanceof Player)) {
             commandSender.sendMessage("Only players can perform this command.");
             return true;
         }
 
+        // command has a permission which the sender might not hold
         if (commandData.getPermission() != null && !commandSender.hasPermission(commandData.getPermission())) {
             commandSender.sendMessage("You do not have permission to use this command.");
             return true;
         }
 
         try {
-            commandData.getMethod().invoke(commandData.getMethodParent(), commandSender, args);
+            commandData.getMethod().invoke(
+                    commandData.getMethodParent(),
+                    commandSender,
+                    args
+            );
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
 
         return false;
-    }
-
-    private CommandData getCommandData(String label) {
-        return commandDataList.stream()
-                .filter(commandData -> commandData.getName().equalsIgnoreCase(label) || Arrays.stream(commandData.getAlias()).anyMatch(s -> s.equalsIgnoreCase(label)))
-                .findFirst().orElse(null);
     }
 
 }
