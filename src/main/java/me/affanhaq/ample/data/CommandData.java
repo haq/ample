@@ -8,16 +8,28 @@ public class CommandData {
     private final String description;
     private final String usage;
     private final String[] alias;
+    private final Class<?>[] args;
     private final String permission;
     private final boolean playerOnly;
     private final Method method;
     private final Object methodParent;
 
-    public CommandData(String name, String description, String usage, String[] alias, String permission, boolean playerOnly, Method method, Object methodParent) {
+    public CommandData(
+            String name,
+            String description,
+            String usage,
+            String[] alias,
+            Class<?>[] args,
+            String permission,
+            boolean playerOnly,
+            Method method,
+            Object methodParent
+    ) {
         this.name = name;
         this.description = description;
         this.usage = usage;
         this.alias = alias;
+        this.args = args;
         this.permission = permission;
         this.playerOnly = playerOnly;
         this.method = method;
@@ -38,6 +50,10 @@ public class CommandData {
 
     public String[] getAlias() {
         return alias;
+    }
+
+    public Class<?>[] getArgs() {
+        return args;
     }
 
     public String getPermission() {
