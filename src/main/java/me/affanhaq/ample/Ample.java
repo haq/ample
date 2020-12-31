@@ -1,5 +1,6 @@
 package me.affanhaq.ample;
 
+import com.google.common.collect.Lists;
 import me.affanhaq.ample.data.CommandData;
 import me.affanhaq.ample.data.annotation.Command;
 import me.affanhaq.ample.data.annotation.Permission;
@@ -19,6 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 public class Ample {
 
@@ -43,9 +45,8 @@ public class Ample {
         Arrays.stream(objects).forEach(object ->
                 Arrays.stream(object.getClass().getDeclaredMethods())
                         .filter(method -> method.isAnnotationPresent(Command.class))
-                        .filter(method -> method.getParameterCount() == 2)
+                        .filter(method -> method.getParameterCount() >= 1)
                         .filter(method -> CommandSender.class.isAssignableFrom(method.getParameterTypes()[0]))
-                        .filter(method -> String[].class.isAssignableFrom(method.getParameterTypes()[1]))
                         .forEach(method -> {
 
                             method.setAccessible(true);
@@ -59,6 +60,7 @@ public class Ample {
                                     commandAnnotation.description(),
                                     commandAnnotation.usage(),
                                     commandAnnotation.alias(),
+                                    Arrays.copyOfRange(method.getParameterTypes(), 1, method.getParameterTypes().length),
                                     method.isAnnotationPresent(Permission.class) ? method.getAnnotation(Permission.class).value() : null,
                                     method.isAnnotationPresent(PlayerOnly.class),
                                     method,
@@ -109,7 +111,7 @@ public class Ample {
                         }));
     }
 
-    private static boolean onCommand(CommandSender commandSender, String label, String[] args) {
+    private static boolean onCommand(CommandSender sender, String label, String[] args) {
 
         CommandData commandData = COMMANDS.get(label.toLowerCase());
 
@@ -119,22 +121,57 @@ public class Ample {
         }
 
         // command is player only but non-player is calling the command
-        if (commandData.isPlayerOnly() && !(commandSender instanceof Player)) {
-            commandSender.sendMessage("Only players can perform this command.");
+        if (commandData.isPlayerOnly() && !(sender instanceof Player)) {
+            sender.sendMessage("Only players can perform this command.");
             return true;
         }
 
         // command has a permission which the sender might not hold
-        if (commandData.getPermission() != null && !commandSender.hasPermission(commandData.getPermission())) {
-            commandSender.sendMessage("You do not have permission to use this command.");
+        if (commandData.getPermission() != null && !sender.hasPermission(commandData.getPermission())) {
+            sender.sendMessage("You do not have permission to use this command.");
             return true;
+        }
+
+        // checking if the user typed in all args
+        if (args.length != commandData.getArgs().length) {
+            sender.sendMessage(commandData.getUsage());
+            return true;
+        }
+
+        // TODO: check if all arguments match the ones asked in the command
+        List<Object> parsedArgs = Lists.newArrayList(sender);
+        for (int i = 0; i < args.length; i++) {
+            Class<?> cArgs = commandData.getArgs()[i];
+            if (Integer.TYPE.isAssignableFrom(cArgs)) {
+                try {
+                    parsedArgs.add(
+                            Integer.parseInt(args[i])
+                    );
+                } catch (NumberFormatException e) {
+                    sender.sendMessage(commandData.getUsage());
+                    return false;
+                }
+            } else if (Double.TYPE.isAssignableFrom(cArgs)) {
+                try {
+                    parsedArgs.add(
+                            Double.parseDouble(args[i])
+                    );
+                } catch (NumberFormatException e) {
+                    sender.sendMessage(commandData.getUsage());
+                    return false;
+                }
+            } else if (String.class.isAssignableFrom(cArgs)) {
+                parsedArgs.add(args[i]);
+            } else {
+                sender.sendMessage(commandData.getUsage());
+                return false;
+            }
         }
 
         try {
             commandData.getMethod().invoke(
                     commandData.getMethodParent(),
-                    commandSender,
-                    args
+                    parsedArgs.toArray()
             );
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
